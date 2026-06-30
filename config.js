@@ -19,7 +19,7 @@ window.EVENTS_BOARD_CONFIG = {
       communityName: 'קהילת Sparkco',
       communitySubtitle: 'לוח האירועים הקרובים של הקהילה'
     },
-    'spiritual-gym': {
+    'our-community': {
       communityName: 'Our Community',
       communitySubtitle: 'מפגשים, תרגולים ואירועי קהילה קרובים'
     }
