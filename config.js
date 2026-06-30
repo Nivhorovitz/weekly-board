@@ -20,7 +20,7 @@ window.EVENTS_BOARD_CONFIG = {
       communitySubtitle: 'לוח האירועים הקרובים של הקהילה'
     },
     'spiritual-gym': {
-      communityName: 'Spiritual Gym',
+      communityName: 'Our Community',
       communitySubtitle: 'מפגשים, תרגולים ואירועי קהילה קרובים'
     }
   }
