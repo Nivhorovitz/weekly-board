@@ -1,0 +1,47 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>לוח אירועים קהילתי</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <main class="app-shell public-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Community Events Board</p>
+        <h1 id="communityName">לוח אירועים קהילתי</h1>
+        <p id="communitySubtitle" class="subtitle">מה קורה בקהילה ומתי כדאי להיכנס</p>
+      </div>
+      <a class="admin-link" href="admin.html" target="_blank" rel="noopener">אדמין</a>
+    </section>
+
+    <section class="toolbar" aria-label="סינון אירועים">
+      <button class="filter-chip active" data-filter="all">הכל</button>
+      <button class="filter-chip" data-filter="מפגש קהילה">מפגשי קהילה</button>
+      <button class="filter-chip" data-filter="סדנה">סדנאות</button>
+      <button class="filter-chip" data-filter="מעגל">מעגלים</button>
+      <button class="filter-chip" data-filter="שיחה פתוחה">שיחות פתוחות</button>
+      <button class="filter-chip" data-filter="אירוע מיוחד">אירועים מיוחדים</button>
+    </section>
+
+    <section id="featuredEvent" class="featured hidden" aria-live="polite"></section>
+
+    <section class="section-heading">
+      <h2>האירועים הקרובים</h2>
+      <p id="eventsCount"></p>
+    </section>
+
+    <section id="eventsList" class="events-grid" aria-live="polite"></section>
+    <section id="emptyState" class="empty-state hidden">
+      <h3>אין אירועים להצגה כרגע</h3>
+      <p>ברגע שהאדמין יעדכן את הלוח, האירועים יופיעו כאן.</p>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

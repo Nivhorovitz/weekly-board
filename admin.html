@@ -1,0 +1,138 @@
+<!doctype html>
+<html lang="he" dir="rtl">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>ניהול לוח אירועים</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <main class="app-shell admin-shell">
+    <section class="hero admin-hero">
+      <div>
+        <p class="eyebrow">Admin</p>
+        <h1>ניהול לוח האירועים</h1>
+        <p class="subtitle">הוספה, עריכה והסתרה של אירועים במרחב הקהילתי</p>
+      </div>
+      <a class="admin-link" href="index.html" target="_blank" rel="noopener">צפייה בלוח</a>
+    </section>
+
+    <section id="loginPanel" class="panel login-panel">
+      <h2>כניסת אדמין</h2>
+      <p>בגרסת הדמו הכניסה היא עם סיסמה מקומית. אם תחברו Supabase, הכניסה תעבור לאימייל וסיסמה של אדמין.</p>
+      <form id="loginForm" class="form compact-form">
+        <label id="emailLabel" class="hidden">
+          אימייל אדמין
+          <input id="emailInput" type="email" autocomplete="username" placeholder="admin@example.com" />
+        </label>
+        <label>
+          סיסמה
+          <input id="passwordInput" type="password" autocomplete="current-password" placeholder="הכנס סיסמה" required />
+        </label>
+        <button type="submit" class="primary-btn">כניסה</button>
+        <p id="loginError" class="error-text hidden">הסיסמה אינה נכונה.</p>
+      </form>
+    </section>
+
+    <section id="adminPanel" class="admin-layout hidden">
+      <form id="eventForm" class="panel form event-form">
+        <div class="form-header">
+          <div>
+            <h2 id="formTitle">אירוע חדש</h2>
+            <p>מלא את הפרטים ושמור. רק אירועים שמסומנים כמפורסמים יופיעו בלוח.</p>
+          </div>
+          <button type="button" id="resetFormBtn" class="secondary-btn">ניקוי טופס</button>
+        </div>
+
+        <input type="hidden" id="eventId" />
+
+        <label>
+          שם האירוע
+          <input id="title" type="text" placeholder="לדוגמה: מעגל פתיחה שבועי" required />
+        </label>
+
+        <label>
+          תיאור קצר
+          <textarea id="description" rows="3" placeholder="מה קורה במפגש ולמי הוא מתאים"></textarea>
+        </label>
+
+        <div class="form-row">
+          <label>
+            תאריך
+            <input id="date" type="date" required />
+          </label>
+          <label>
+            שעת התחלה
+            <input id="startTime" type="time" required />
+          </label>
+          <label>
+            שעת סיום
+            <input id="endTime" type="time" />
+          </label>
+        </div>
+
+        <div class="form-row">
+          <label>
+            מנחה / מוביל/ה
+            <input id="host" type="text" placeholder="שם המנחה" />
+          </label>
+          <label>
+            סוג אירוע
+            <select id="category">
+              <option>מפגש קהילה</option>
+              <option>סדנה</option>
+              <option>מעגל</option>
+              <option>שיחה פתוחה</option>
+              <option>אירוע מיוחד</option>
+            </select>
+          </label>
+          <label>
+            סטטוס
+            <select id="status">
+              <option>פתוח</option>
+              <option>בקרוב</option>
+              <option>מלא</option>
+              <option>עבר</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          קישור לחדר / אירוע
+          <input id="roomUrl" type="url" placeholder="https://..." />
+        </label>
+
+        <label>
+          קישור הרשמה, אם יש
+          <input id="registrationUrl" type="url" placeholder="https://..." />
+        </label>
+
+        <div class="toggles">
+          <label class="check-label"><input id="isFeatured" type="checkbox" /> להבליט כאירוע מרכזי</label>
+          <label class="check-label"><input id="isPublished" type="checkbox" checked /> לפרסם בלוח</label>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="primary-btn">שמירת אירוע</button>
+          <button type="button" id="deleteBtn" class="danger-btn hidden">מחיקת אירוע</button>
+        </div>
+      </form>
+
+      <section class="panel admin-list-panel">
+        <div class="form-header">
+          <div>
+            <h2>אירועים קיימים</h2>
+            <p id="adminStatus">טוען אירועים...</p>
+          </div>
+        </div>
+        <div id="adminEventsList" class="admin-events-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="admin.js"></script>
+</body>
+</html>
