@@ -9,7 +9,8 @@ window.EVENTS_BOARD_CONFIG = {
   communitySubtitle: 'לוח האירועים הקרובים של הקהילה',
   adminPassword: 'sparkco-admin', // Demo password only. Replace before sharing.
   supabaseUrl: '',
-  supabaseAnonKey: '',
+  supabaseAnonKey: 'supabaseUrl: 'https://dexaleorkpbwmoefrbii.supabase.co',
+supabaseAnonKey: 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImRleGFsZW9ya3Bid21vZWZyYmlpIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODI5MjgwNDEsImV4cCI6MjA5ODUwNDA0MX0.M2WoCPw9rbJNovoviwJBYtvuNev42mn7F82Axy5oXEE',',
   defaultRoomUrl: '',
   rtl: true,
 
