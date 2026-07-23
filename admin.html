@@ -49,7 +49,7 @@
 
         <label>
           שם האירוע
-          <input id="title" type="text" placeholder="לדוגמה: מעגל פתיחה שבועי" required />
+          <input id="title" type="text" placeholder="לדוגמה: Weekly Sales Practice" required />
         </label>
 
         <label>
@@ -80,20 +80,42 @@
           <label>
             סוג אירוע
             <select id="category">
-              <option>מפגש קהילה</option>
-              <option>סדנה</option>
-              <option>מעגל</option>
-              <option>שיחה פתוחה</option>
-              <option>אירוע מיוחד</option>
+              <optgroup label="Her Last Call">
+                <option>Weekly Call</option>
+                <option>Pitch Practice</option>
+                <option>Role Play</option>
+                <option>Hot Seat</option>
+                <option>Accountability</option>
+                <option>Call Review</option>
+                <option>Spark Match</option>
+                <option>Guest Training</option>
+                <option>Community Session</option>
+                <option>Special Session</option>
+              </optgroup>
+              <optgroup label="עברית">
+                <option>מפגש קהילה</option>
+                <option>סדנה</option>
+                <option>מעגל</option>
+                <option>שיחה פתוחה</option>
+                <option>אירוע מיוחד</option>
+              </optgroup>
             </select>
           </label>
           <label>
             סטטוס
             <select id="status">
-              <option>פתוח</option>
-              <option>בקרוב</option>
-              <option>מלא</option>
-              <option>עבר</option>
+              <optgroup label="English">
+                <option>Open</option>
+                <option>Coming Soon</option>
+                <option>Full</option>
+                <option>Past</option>
+              </optgroup>
+              <optgroup label="עברית">
+                <option>פתוח</option>
+                <option>בקרוב</option>
+                <option>מלא</option>
+                <option>עבר</option>
+              </optgroup>
             </select>
           </label>
         </div>
