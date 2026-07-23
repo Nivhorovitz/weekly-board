@@ -1,0 +1,193 @@
+/* Her Last Call branded theme
+   Activated with: ?theme=hlc&lang=en */
+
+body.theme-hlc {
+  --bg: #fff8ef;
+  --surface: rgba(255, 248, 239, 0.92);
+  --surface-strong: #fffaf3;
+  --text: #2a1b1e;
+  --muted: #7a6562;
+  --line: rgba(91, 31, 40, 0.16);
+  --shadow: 0 24px 70px rgba(91, 31, 40, 0.16);
+  --hlc-burgundy: #a8323d;
+  --hlc-wine: #5b1f28;
+  --hlc-deep: #331117;
+  --hlc-ivory: #fff8ef;
+  --hlc-blush: #f4e2de;
+  --hlc-gold: #c9a86a;
+  background:
+    radial-gradient(circle at 18% 8%, rgba(168, 50, 61, 0.20), transparent 28%),
+    radial-gradient(circle at 88% 10%, rgba(201, 168, 106, 0.24), transparent 30%),
+    linear-gradient(145deg, #fff8ef 0%, #f4e2de 48%, #fffaf3 100%);
+}
+
+body.theme-hlc .app-shell {
+  width: min(1180px, calc(100% - 36px));
+}
+
+body.theme-hlc .hero {
+  background:
+    linear-gradient(135deg, rgba(255,250,243,.96), rgba(255,248,239,.90)),
+    radial-gradient(circle at 90% 16%, rgba(168,50,61,.16), transparent 34%);
+  border: 1px solid rgba(201, 168, 106, 0.38);
+  box-shadow: 0 24px 80px rgba(91,31,40,.14);
+}
+
+body.theme-hlc .eyebrow {
+  color: var(--hlc-burgundy);
+  letter-spacing: .14em;
+  font-weight: 800;
+}
+
+body.theme-hlc h1,
+body.theme-hlc h2,
+body.theme-hlc h3,
+body.theme-hlc .event-title {
+  font-family: Georgia, 'Times New Roman', serif;
+  letter-spacing: -0.02em;
+}
+
+body.theme-hlc h1 {
+  color: var(--hlc-wine);
+  font-size: clamp(2.3rem, 4.6vw, 4.7rem);
+}
+
+body.theme-hlc .subtitle {
+  color: #765d5c;
+  font-weight: 600;
+}
+
+body.theme-hlc .admin-link,
+body.theme-hlc .filter-chip,
+body.theme-hlc .secondary-btn {
+  background: #fffaf3;
+  border-color: rgba(201,168,106,.34);
+  color: var(--hlc-wine);
+  font-weight: 700;
+}
+
+body.theme-hlc .filter-chip.active,
+body.theme-hlc .primary-btn,
+body.theme-hlc .event-action {
+  background: var(--hlc-burgundy);
+  border-color: var(--hlc-burgundy);
+  color: white;
+}
+
+body.theme-hlc .featured {
+  position: relative;
+  overflow: hidden;
+  margin-top: 22px;
+  padding: 34px;
+  background:
+    radial-gradient(circle at 16% 10%, rgba(255,248,239,.18), transparent 30%),
+    linear-gradient(135deg, #5b1f28 0%, #8f2632 58%, #a8323d 100%);
+  border: 1px solid rgba(201,168,106,.52);
+  box-shadow: 0 30px 90px rgba(91,31,40,.28);
+}
+
+body.theme-hlc .featured::before {
+  content: '';
+  position: absolute;
+  inset: 16px;
+  border: 1px solid rgba(232,214,181,.42);
+  border-radius: 18px;
+  pointer-events: none;
+}
+
+body.theme-hlc .featured .eyebrow {
+  color: rgba(232,214,181,.88);
+  margin-bottom: 16px;
+}
+
+body.theme-hlc .featured .featured-card,
+body.theme-hlc .featured .event-card {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  background: transparent;
+  border: none;
+  box-shadow: none;
+  backdrop-filter: none;
+  padding: 8px 2px 2px;
+  min-height: auto;
+  color: white;
+}
+
+body.theme-hlc .featured .event-title {
+  color: #fff8ef;
+  font-size: clamp(2rem, 4vw, 4rem);
+  line-height: 1.02;
+}
+
+body.theme-hlc .featured .event-description,
+body.theme-hlc .featured .event-meta {
+  color: rgba(255,248,239,.88);
+  font-size: 1.05rem;
+}
+
+body.theme-hlc .featured .badge,
+body.theme-hlc .featured .event-date {
+  background: rgba(255,248,239,.14);
+  color: #fff8ef;
+  border: 1px solid rgba(232,214,181,.28);
+}
+
+body.theme-hlc .featured .event-day,
+body.theme-hlc .featured .event-month {
+  color: #fff8ef;
+}
+
+body.theme-hlc .featured .event-action {
+  background: #fff8ef;
+  color: var(--hlc-wine);
+  border-color: #fff8ef;
+  font-weight: 800;
+}
+
+body.theme-hlc .event-card,
+body.theme-hlc .panel {
+  background: rgba(255,250,243,.92);
+  border: 1px solid rgba(201,168,106,.30);
+}
+
+body.theme-hlc .event-title {
+  color: var(--hlc-wine);
+}
+
+body.theme-hlc .badge,
+body.theme-hlc .event-date {
+  background: rgba(168,50,61,.08);
+  color: var(--hlc-wine);
+}
+
+body.theme-hlc .event-day {
+  color: var(--hlc-wine);
+}
+
+body.theme-hlc .section-group {
+  margin-top: 18px;
+}
+
+body.theme-hlc .section-group + .section-group {
+  margin-top: 34px;
+}
+
+body.theme-hlc .section-group-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 18px;
+  margin: 28px 4px 14px;
+}
+
+body.theme-hlc .section-group-header h2 {
+  margin: 0;
+  color: var(--hlc-wine);
+}
+
+body.theme-hlc .section-group-header p {
+  margin: 0;
+  color: var(--muted);
+  font-weight: 650;
+}
