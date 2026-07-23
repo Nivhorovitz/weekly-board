@@ -46,5 +46,20 @@
     window.EVENTS_BOARD_CONFIG.defaultCommunityId = 'her-last-call';
   </script>
   <script src="app.js"></script>
+  <script>
+    function forceEnglishAdminLink() {
+      const adminLink = document.querySelector('.admin-link');
+      if (!adminLink) return;
+      adminLink.textContent = 'Admin';
+      adminLink.href = 'admin-en.html?community=her-last-call&theme=hlc&lang=en';
+      adminLink.target = '_blank';
+      adminLink.rel = 'noopener';
+    }
+
+    forceEnglishAdminLink();
+    setTimeout(forceEnglishAdminLink, 0);
+    setTimeout(forceEnglishAdminLink, 300);
+    setTimeout(forceEnglishAdminLink, 1000);
+  </script>
 </body>
 </html>
