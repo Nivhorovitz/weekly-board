@@ -1,0 +1,144 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Manage Weekly Board</title>
+  <link rel="stylesheet" href="styles.css" />
+  <link rel="stylesheet" href="hlc.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body class="theme-hlc admin-en-page">
+  <main class="app-shell admin-shell">
+    <section class="hero admin-hero">
+      <div>
+        <p class="eyebrow">Admin</p>
+        <h1>Manage Weekly Board</h1>
+        <p class="subtitle">Create, edit, feature and hide sessions for this community space.</p>
+      </div>
+      <a class="admin-link" href="hlc.html?community=her-last-call&theme=hlc&lang=en" target="_blank" rel="noopener">View Board</a>
+    </section>
+
+    <section id="loginPanel" class="panel login-panel">
+      <h2>Admin Login</h2>
+      <p>Sign in with your Supabase admin email and password.</p>
+      <form id="loginForm" class="form compact-form">
+        <label id="emailLabel" class="hidden">
+          Admin Email
+          <input id="emailInput" type="email" autocomplete="username" placeholder="admin@example.com" />
+        </label>
+        <label>
+          Password
+          <input id="passwordInput" type="password" autocomplete="current-password" placeholder="Enter password" required />
+        </label>
+        <button type="submit" class="primary-btn">Sign In</button>
+        <p id="loginError" class="error-text hidden">Login failed. Check your email and password.</p>
+      </form>
+    </section>
+
+    <section id="adminPanel" class="admin-layout hidden">
+      <form id="eventForm" class="panel form event-form">
+        <div class="form-header">
+          <div>
+            <h2 id="formTitle">New Session</h2>
+            <p>Fill in the details and save. Only published sessions will appear on the public board.</p>
+          </div>
+          <button type="button" id="resetFormBtn" class="secondary-btn">Clear Form</button>
+        </div>
+
+        <input type="hidden" id="eventId" />
+
+        <label>
+          Session Name
+          <input id="title" type="text" placeholder="Example: Weekly Stage: Close With Confidence" required />
+        </label>
+
+        <label>
+          Short Description
+          <textarea id="description" rows="3" placeholder="What happens in this session and who it is for"></textarea>
+        </label>
+
+        <div class="form-row">
+          <label>
+            Date
+            <input id="date" type="date" required />
+          </label>
+          <label>
+            Start Time
+            <input id="startTime" type="time" required />
+          </label>
+          <label>
+            End Time
+            <input id="endTime" type="time" />
+          </label>
+        </div>
+
+        <div class="form-row">
+          <label>
+            Host / Lead
+            <input id="host" type="text" placeholder="Host name" />
+          </label>
+          <label>
+            Session Type
+            <select id="category">
+              <option>Weekly Call</option>
+              <option>Pitch Practice</option>
+              <option>Role Play</option>
+              <option>Hot Seat</option>
+              <option>Accountability</option>
+              <option>Call Review</option>
+              <option>Spark Match</option>
+              <option>Guest Training</option>
+              <option>Community Session</option>
+              <option>Special Session</option>
+            </select>
+          </label>
+          <label>
+            Status
+            <select id="status">
+              <option>Open</option>
+              <option>Coming Soon</option>
+              <option>Full</option>
+              <option>Past</option>
+            </select>
+          </label>
+        </div>
+
+        <label>
+          Room / Session Link
+          <input id="roomUrl" type="url" placeholder="https://..." />
+        </label>
+
+        <label>
+          Registration Link, optional
+          <input id="registrationUrl" type="url" placeholder="https://..." />
+        </label>
+
+        <div class="toggles">
+          <label class="check-label"><input id="isFeatured" type="checkbox" /> Feature this session</label>
+          <label class="check-label"><input id="isPublished" type="checkbox" checked /> Publish to board</label>
+        </div>
+
+        <div class="form-actions">
+          <button type="submit" class="primary-btn">Save Session</button>
+          <button type="button" id="deleteBtn" class="danger-btn hidden">Delete Session</button>
+        </div>
+      </form>
+
+      <section class="panel admin-list-panel">
+        <div class="form-header">
+          <div>
+            <h2>Existing Sessions</h2>
+            <p id="adminStatus">Loading sessions...</p>
+          </div>
+        </div>
+        <div id="adminEventsList" class="admin-events-list"></div>
+      </section>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script src="app.js"></script>
+  <script src="admin-en.js"></script>
+</body>
+</html>
