@@ -1,0 +1,49 @@
+<!doctype html>
+<html lang="en" dir="ltr">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Her Last Call Weekly Board</title>
+  <link rel="stylesheet" href="styles.css" />
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+</head>
+<body>
+  <main class="app-shell public-shell">
+    <section class="hero">
+      <div>
+        <p class="eyebrow">Her Last Call Academy</p>
+        <h1 id="communityName">Her Last Call Weekly Board</h1>
+        <p id="communitySubtitle" class="subtitle">Your weekly rhythm for practice, connection and high-ticket sales mastery</p>
+      </div>
+      <a class="admin-link" href="admin.html" target="_blank" rel="noopener">Admin</a>
+    </section>
+
+    <section class="toolbar" aria-label="Event filters"></section>
+
+    <section id="featuredEvent" class="featured hidden" aria-live="polite"></section>
+
+    <section class="section-heading">
+      <h2>This Week</h2>
+      <p id="eventsCount"></p>
+    </section>
+
+    <section id="eventsList" aria-live="polite"></section>
+    <section id="emptyState" class="empty-state hidden">
+      <h3>No sessions to show yet</h3>
+      <p>Once the admin updates the board, sessions will appear here.</p>
+    </section>
+  </main>
+
+  <script src="config.js"></script>
+  <script>
+    window.EVENTS_BOARD_CONFIG = window.EVENTS_BOARD_CONFIG || {};
+    window.EVENTS_BOARD_CONFIG.communities = window.EVENTS_BOARD_CONFIG.communities || {};
+    window.EVENTS_BOARD_CONFIG.communities['her-last-call'] = {
+      communityName: 'Her Last Call Weekly Board',
+      communitySubtitle: 'Your weekly rhythm for practice, connection and high-ticket sales mastery'
+    };
+    window.EVENTS_BOARD_CONFIG.defaultCommunityId = 'her-last-call';
+  </script>
+  <script src="app.js"></script>
+</body>
+</html>
