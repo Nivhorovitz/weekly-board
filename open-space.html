@@ -1,0 +1,12 @@
+<!DOCTYPE html>
+<html lang="he" dir="rtl">
+<meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>לוח המפגשים של קוד פתוח</title>
+<style>
+*{box-sizing:border-box}body{margin:0;background:#f7f4ea;color:#153e38;font:17px system-ui}main{max-width:640px;margin:auto;padding:22px}h1{font-size:clamp(25px,6vw,40px);margin:0}p{line-height:1.5}label{display:block;margin:14px 0}button,input,select{font:inherit;border:1px solid #82958d;border-radius:8px;padding:8px;color:inherit;background:white}button{cursor:pointer}button:disabled{opacity:.55}form{background:#e3eee5;padding:14px;border-radius:12px}form button{color:white;background:#165a4f}input[name=topic]{width:100%}ul{list-style:none;padding:0}li{border-bottom:1px solid #ccd5c9;padding:12px 0}small{display:block}#status{min-height:1.5em}
+</style>
+<main><h1>לוח המפגשים של קוד פתוח</h1><p>איזו שיחה תרצו לפתוח? בחרו שעה ושולחן, והזמינו את הקהילה להצטרף.</p>
+<form><label>נושא השיחה <input name="topic" required maxlength="120"></label><label>מועד המפגש <select name="slot" required></select></label>
+<label>שולחן <select name="desk" required></select></label><button type="submit" disabled>פרסום מפגש</button></form>
+<p role="status" id="status"></p><h2>השיחות הקרובות</h2><ul></ul></main>
+<script src="config.js"></script><script src="open-space.js"></script></html>
