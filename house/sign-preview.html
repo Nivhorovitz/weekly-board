@@ -13,7 +13,7 @@ const liveRoom = new URLSearchParams(location.search).get('room');
 const live = /^[A-Za-z0-9]{20}$/.test(liveRoom || '');
 const room = live ? liveRoom : 'OpenSpaceDemoView001';
 const channel = !live && typeof BroadcastChannel === 'function' ? new BroadcastChannel('olive-house/table-topics/v1') : null;
-const tables = [['זית',863,372],['הבוסתן',1603,511],['גפן',2365,405],['חצר',825,934],['כרם',2365,790]];
+const tables = [["זית", 865, 235], ["הבוסתן", 1930, 384], ["גפן", 2365, 272], ["חצר", 1360, 924], ["כרם", 1656, 830]];
 const topics = new Map([['זית','מה יגרום לאנשים לחזור למפגש הבא?'],['גפן','איזו יוזמה נרצה להוביל יחד?']]);
 const desk = document.getElementById('desk'), topic = document.getElementById('topic'), status = document.getElementById('status');
 function publish() { channel?.postMessage({type:'titles',room,titles:[...topics].map(([desk,title])=>({desk,title}))}); }

@@ -12,6 +12,7 @@ if(params.get('usage')==='true'){const pre=document.createElement('pre');pre.tex
 else{
   const form=document.createElement('form'),title=document.createElement('h1');title.textContent='הגדרות לוח השיחות';main.append(title,form);
   const tz=document.createElement('p');tz.textContent='שעת ההתחלה לפי '+Intl.DateTimeFormat().resolvedOptions().timeZone+'. ללא תאריך, הלוח פתוח לשיחות שמתחילות עכשיו.';form.append(tz);
+  const roomHelp=document.createElement('p');roomHelp.textContent='הגבלת החדרים כאן קובעת אילו חדרים זמינים בלוח לשיבוץ. לפתיחת מספר קבוע של עותקים מראש, בחרו Equal distribution בהגדרות הפופ־אפ של החדר בספארקו.';form.append(roomHelp);
   for(const field of fields){
     const label=document.createElement('label'),input=document.createElement('input');label.textContent=field.label;input.name=field.name;input.type=field.type;
     if(field.min){input.min=field.min;input.max=field.max;}
@@ -22,6 +23,10 @@ else{
   }
   const submit=document.createElement('button');submit.textContent='להחיל הגדרות';form.append(submit);
   const output=document.createElement('textarea');output.readOnly=true;output.hidden=true;output.setAttribute('aria-label','כתובת להטמעה');form.append(output);
+  const previewTitle=document.createElement('h2');previewTitle.textContent='תצוגה מקדימה · הצעות לדוגמה';main.append(previewTitle);
+  const frame=document.createElement('iframe');frame.title='תצוגה מקדימה של לוח השיחות';frame.style.cssText='width:100%;height:280px;border:0;background:#e6dfcc';main.append(frame);
+  function previewUrl(){const u=new URL('./',location.href);u.searchParams.set('view','wall');u.searchParams.set('preview','agenda');for(const [key,val] of new FormData(form))if(val){if(key==='start'&&!Number.isFinite(Date.parse(val)))continue;u.searchParams.set(key,key==='start'?new Date(val).toISOString():val);}frame.src=u.href;}
+  previewUrl();form.addEventListener('change',previewUrl);
   const protocol='sparkco-plugin-setup-v1',host='https://app.sparkco.space';
   if(parent!==window)parent.postMessage({protocol,type:'plugin.setup_ready'},host);
   form.onsubmit=e=>{e.preventDefault();const q=new URLSearchParams({view:'wall',room:'@@room-uid@@',room_name:'@@room-name@@',transparent:'@@is-transparent@@'});

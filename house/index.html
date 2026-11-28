@@ -64,7 +64,30 @@ td .topic,.wall td .topic{background:transparent;padding:0;font:650 1em/1.12 sys
 .table-view #list button{font-size:15px;line-height:1.15;padding:4px 7px}
 .table-view #list article{padding:4px 0;background:none;border:0;border-top:1px solid #c8c7af;border-radius:0}
 .table-view #list p{padding:0;background:none;font-size:16px}
-.wall dialog{font-size:16px}.wall dialog h2{font-size:18px}
+.wall th,.wall td{padding-block:1px;line-height:1.06}.wall td .topic{line-height:1.05;vertical-align:middle}.wall table{font-size:17px}.table-view details{font-size:14px;margin-top:7px}.table-view summary{cursor:pointer}.wall dialog{font-size:16px}.wall dialog h2{font-size:18px}
+#list:has(.agenda-timeline){display:flex;flex-direction:column;overflow:hidden;min-height:0}
+.agenda-timeline{position:relative;min-height:0;max-width:100%;width:fit-content}
+.agenda-scroll{max-height:100%;max-width:100%;overflow:auto;overscroll-behavior:contain;touch-action:pan-x pan-y;direction:rtl;scrollbar-width:thin;cursor:grab}
+.agenda-scroll.dragging,.agenda-scroll.dragging *{cursor:grabbing!important}
+.agenda-scroll,.agenda-scroll button{user-select:none}
+table.schedule-grid{width:max-content;min-width:0;border-collapse:separate;border-spacing:0;isolation:isolate}
+.schedule-grid thead th{position:sticky;top:0;z-index:2}
+.schedule-grid thead th:first-child,.schedule-grid tbody th{position:sticky;right:0;z-index:3;border-inline-end:1px solid #92977c}
+.schedule-grid thead th:first-child{z-index:4}
+.schedule-grid tbody th{background:#f1ecdb;color:#384733;text-align:start}
+.schedule-grid tbody th small{display:inline;font-size:.75em;color:#526345;background:none;padding:0}
+.schedule-grid th:first-child{min-width:100px;white-space:nowrap}
+.schedule-grid td,.schedule-grid thead th:not(:first-child){width:178px;min-width:178px;max-width:178px;border-inline-end:1px solid #d4d4bf}
+.schedule-grid td{height:21px}
+.schedule-grid .topic{display:block;text-align:start;width:100%;overflow:hidden;white-space:nowrap;text-overflow:ellipsis}
+.schedule-grid td:empty{background:#f2efdf}
+.schedule-grid tr:nth-child(even) td:empty{background:#eae8d6}
+.schedule-arrow,.wall .schedule-arrow{position:absolute;top:50%;transform:translateY(-50%);z-index:5;display:grid;place-items:center;width:27px;height:40px;padding:0;border:1px solid #7e866d;border-radius:7px;background:#f9f6e9f5;color:#344630;box-shadow:0 2px 5px #30392528}
+.schedule-arrow.earlier{right:0}.schedule-arrow.later{left:0}
+.schedule-arrow span{display:block;width:11px;height:11px;border-top:2px solid currentColor;border-right:2px solid currentColor;transform:rotate(45deg)}
+.schedule-arrow.later span{transform:rotate(-135deg)}
+.agenda-scroll:focus-visible{outline:2px solid #b3934e;outline-offset:-2px}
+.agenda-preview main{max-width:760px;max-height:280px}
 </style><body><a class="launcher" id="launcher" href="./" target="_blank" rel="noopener" aria-label="לוח השיחות בחלון נפרד" title="לוח השיחות בחלון נפרד">
 <svg viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6h26a2 2 0 0 1 2 2v20a2 2 0 0 1-2 2H18l-8 6v-6H7a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" fill="#34452f" stroke="#f5f1dc" stroke-width="2.3"/><path d="M12 14h16m-16 7h10" stroke="#f5f1dc" stroke-width="2.5"/></svg>
-<span>לוח השיחות</span></a><main><header><h1>מרחב פתוח</h1><button id="new" class="primary" disabled>להציע שיחה</button></header><nav aria-label="תצוגה"><button id="live">לוח השיחות</button><button id="market">שוק הרעיונות</button></nav><p id="status" role="status">מתחברים ללוח…</p><div id="list"></div></main><dialog><form><h2 id="heading"></h2><div id="fields"></div><p id="error" role="alert"></p><div class="actions"><button class="primary" id="save">שמירה</button><button type="button" id="cancel">חזרה</button></div></form></dialog><script src="https://sparkco-olive-house.nivos8.chatgpt.site/lib/sparkco-bridge.js"></script><script type="module" src="entry.js?v=2"></script></html>
+<span>לוח השיחות</span></a><main><header><h1>מרחב פתוח</h1><button id="new" class="primary" disabled>להציע שיחה</button></header><nav aria-label="תצוגה"><button id="live">לוח השיחות</button><button id="market">שוק הרעיונות</button></nav><p id="status" role="status">מתחברים ללוח…</p><div id="list"></div></main><dialog><form><h2 id="heading"></h2><div id="fields"></div><p id="error" role="alert"></p><div class="actions"><button class="primary" id="save">שמירה</button><button type="button" id="cancel">חזרה</button></div></form></dialog><script src="https://sparkco-olive-house.nivos8.chatgpt.site/lib/sparkco-bridge.js"></script><script type="module" src="entry.js?v=2.1"></script></html>

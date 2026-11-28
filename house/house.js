@@ -1,3 +1,4 @@
+import {timeline,rememberAgenda} from './agenda.js';
 import {desks as deskNames,inSession,overlaps,rounds,numberOption,timeRange} from './timing.js';
 const $ = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -5,7 +6,7 @@ const initialRoom = 'SiP9e8gVkEFw6zkqYuDW';
 let room = params.get('room') || initialRoom;
 const tableView=params.get('view')==='table';
 const desk=params.get('desk') || '';
-const wallView=!tableView;
+const preview=params.get('preview')==='agenda';
 const bridge = window.SparkcoBridge;
 if(tableView){
   document.documentElement.classList.add('table-view');
@@ -29,33 +30,41 @@ function setLauncher(nativeOpen) {
     launcher.focus();
   } : null;
 }
-const signFeed = typeof BroadcastChannel === 'function' ? new BroadcastChannel('olive-house/table-topics/v1') : null;
+const scheduleParams=new URLSearchParams(params);
+const planKeys=['start','round','duration','rooms'];
+const signFeed = !preview && typeof BroadcastChannel === 'function' ? new BroadcastChannel('olive-house/table-topics/v1') : null;
 function publishTitles() {
-  if (!board || !signFeed || tableView) return;
+  if (!board || !signFeed || tableView || preview) return;
   const titles = board.talks.filter(t => inSession(t) && t.room === room)
     .map(t => ({desk:t.desk, title:t.title}));
-  signFeed.postMessage({type:'titles', room, titles});
+  signFeed.postMessage({type:'titles', room, titles, plan: Object.fromEntries(planKeys.filter(k=>params.has(k)).map(k=>[k,params.get(k)]))});
 }
 if (signFeed) signFeed.onmessage = ({data}) => {
   if (data?.type === 'read' && data.room === room) publishTitles();
+  if (tableView && data?.type==='titles' && data.room===room && data.plan && typeof data.plan==='object') {
+    for(const key of planKeys){const value=data.plan[key];if(typeof value==='string' && value.length<=50)scheduleParams.set(key,value);else scheduleParams.delete(key);}
+  }
 };
-if (bridge && window.parent !== window) {
+if(tableView && !preview)signFeed?.postMessage({type:'read',room});
+if (!preview && bridge && window.parent !== window) {
   bridge.onInit(message => {
     room = message.room_id || room;
     setLauncher(message.widget?.visibility === 'plugin_controlled');
   });
   bridge.onViewport?.(message => { room = message.room_id || room; });
-  bridge.ready('1.1.0');
+  bridge.ready('2.1.0');
 }
 const storageKey = 'open-house/device';
 let device, storageAvailable = true;
 try {
+  if(preview){device=null;}else{
   device = localStorage.getItem(storageKey) || crypto.randomUUID();
   localStorage.setItem(storageKey, device);
+  }
 } catch { storageAvailable = false; }
 const endpoint = 'https://cmtbwohbktirmplieeeq.supabase.co/rest/v1/rpc/';
 const headers = {apikey:'sb_publishable_tk18F8g4AS7oQF9eV9qGQw_nONj_xiX','Content-Type':'application/json'};
-let board, view = 'live', selected = null, lastData = '', refreshing = false;
+let board, view = 'live', lastData = '', refreshing = false;
 let onSave, saving = false;
 const dialog = document.querySelector('dialog');
 const form = dialog.querySelector('form');
@@ -71,6 +80,7 @@ function button(text, action, cls) {
   return n;
 }
 async function rpc(name, values) {
+  if(preview)throw Error('זוהי תצוגה מקדימה.');
   const response = await fetch(endpoint+name,{method:'POST',headers,body:JSON.stringify({device,...values}),signal:AbortSignal.timeout(10000)});
   if(!response.ok) {
     const data=await response.json().catch(()=>({}));
@@ -83,6 +93,10 @@ function activeRoom(r) {
 }
 let lastSeen=0;
 async function refresh() {
+  if(preview){
+    if(!board){const {previewData}=await import('./preview.js');board=previewData(params,room);$('new').hidden=true;$('status').textContent='';render();}
+    return;
+  }
   if(refreshing)return;
   refreshing=true;
   try {
@@ -95,7 +109,7 @@ async function refresh() {
     const data=await rpc('os_house_view',{room_id:room,desk_name:tableView?desk:''});
     const json=JSON.stringify(data)+data.talks.map(t=>inSession(t)?'1':'0').join(''); board=data;
     publishTitles();
-    if(json!==lastData){lastData=json;render();}
+    if(json!==lastData && !document.querySelector('.agenda-scroll.dragging')){lastData=json;render();}
     $('new').disabled=!storageAvailable;
     if($('status').dataset.connection!=='ok'){
       $('status').textContent=storageAvailable?'':'כדי לפרסם, יש לאפשר אחסון בדפדפן.';
@@ -127,13 +141,13 @@ async function write(op,item,extra={}) {
 }
 function freeDesks(slot,source=board) {
   const active=source.rooms.filter(r=>r.room!==initialRoom && activeRoom(r)).sort((a,b)=>a.label.localeCompare(b.label,'he',{numeric:true}));
-  const rooms=(active.length?active:source.rooms.filter(r=>r.room===initialRoom)).slice(0,numberOption(params,'rooms',999,999));
+  const rooms=(active.length?active:source.rooms.filter(r=>r.room===initialRoom)).slice(0,numberOption(scheduleParams,'rooms',999,999));
   return rooms.flatMap(r=>r.desks.filter(d=>!source.talks.some(t=>t.room===r.room && t.desk===d && overlaps(t,slot)))
     .map(d=>({room:r.room,desk:d,label:r.label+' · '+d})));
 }
 async function newTalk(parent=null) {
   const allocation=tableView?await rpc('os_house_view',{room_id:room,desk_name:''}):board;
-  const slots=rounds(params);
+  const slots=rounds(scheduleParams);
   if(!slots.length) throw Error('הסבבים שהוגדרו לאירוע הסתיימו.');
   const id=crypto.randomUUID();
   let choices=[],slot=slots[0];
@@ -152,7 +166,7 @@ async function newTalk(parent=null) {
       const manual=when.value==='custom';
       if(custom){custom.parentElement.hidden=!manual;custom.required=manual;}
       const start=manual?Date.parse(custom.value):NaN;
-      slot=manual?{start,end:start+numberOption(params,'round',30,240)*60000}:slots[Number(when.value)];
+      slot=manual?{start,end:start+numberOption(scheduleParams,'round',30,240)*60000}:slots[Number(when.value)];
       choices=Number.isFinite(slot.start)&&slot.end>Date.now()?freeDesks(slot,allocation):[];where.replaceChildren();
       choices.forEach((d,i)=>where.add(new Option(d.label,i)));
       if(!choices.length)where.add(new Option('אין שולחן פנוי בסבב הזה',''));
@@ -163,7 +177,7 @@ async function newTalk(parent=null) {
     const dest=choices[Number(v.desk)];
     if(!dest || !await rpc('os_house_schedule',{item:id,target:parent,body:v.title,display_name:v.name,room_id:dest.room,desk_name:dest.desk,
       begins:new Date(slot.start).toISOString(),ends:new Date(slot.end).toISOString()})) throw Error('השיחה לא נשמרה.');
-    view='live';selected=null;
+    view='live';
   });
 }
 function contribute(t,kind,initial=''){
@@ -185,24 +199,11 @@ function visit(t){
   }
   $('status').textContent='השיחה מתקיימת בשולחן '+t.desk+' · '+(board.rooms.find(r=>r.room===t.room)?.label||'')+'. אפשר להתיישב בגרירת האווטר.';
 }
-function talkLocation(t) {
-  const label = board.rooms.find(r => r.room === t.room)?.label || '';
-  const location = node('small', t.host + ' · ');
-  const map = node('a', t.desk + ' · ' + label + ' ↗');
-  const url = new URL('sign-preview.html', window.location.href);
-  url.searchParams.set('room', t.room);
-  map.href = url.href;
-  map.target = '_blank';
-  map.rel = 'noopener';
-  map.title = 'הצגת מפת השיחות בחלון נפרד';
-  map.setAttribute('aria-label', map.title + ' · ' + t.desk + ' · ' + label);
-  location.append(map);
-  if (t.closed) location.append(' · הסתיימה');
-  return location;
-}
 function agenda(list){
   const upcoming=board.talks.filter(t=>!t.closed && (!t.ends_at || Date.parse(t.ends_at)>Date.now()))
     .sort((a,b)=>Date.parse(a.starts_at||a.opened)-Date.parse(b.starts_at||b.opened));
+  const makeTopic=t=>{const action=button(t.title,()=>{if(!preview)visit(t);},'topic');action.title=t.host+' · '+t.title;return action;};
+  if(timeline(list,upcoming,board.rooms,scheduleParams,makeTopic))return;
   if(!upcoming.length){list.append(node('p','הלוח פתוח להצעות שיחה.'));return;}
   const table=node('table'),head=table.createTHead().insertRow();
   for(const title of ['שעה','נושא','חדר','שולחן'])head.append(node('th',title));
@@ -210,7 +211,7 @@ function agenda(list){
   for(const t of upcoming){
     const row=body.insertRow(),loc=board.rooms.find(r=>r.room===t.room);
     const time=row.insertCell();time.dir='auto';time.textContent=t.starts_at?timeRange(t.starts_at,t.ends_at):'פתוח';
-    const topic=button(t.title,()=>visit(t),'topic');topic.title=t.host+' · '+t.title;
+    const topic=makeTopic(t);
     row.insertCell().append(topic);row.insertCell().textContent=(loc?.label||'מרחב פתוח').replace(/^מרחב פתוח #/,'#');
     row.insertCell().textContent=t.desk;
   }
@@ -218,7 +219,18 @@ function agenda(list){
 }
 function tableTools(list){
   const t=board.talks.find(t=>t.room===room && t.desk===desk && inSession(t));
-  if(!t){list.append(node('p','אין שיחה כרגע. אפשר להציע נושא בלוח השיחות.'));return;}
+  const previous=board.talks.filter(p=>p.room===room && p.desk===desk && !inSession(p) && (p.closed || (p.ends_at && Date.parse(p.ends_at)<=Date.now()))).reverse();
+  function history(){
+    if(!previous.length)return;
+    const details=node('details');details.append(node('summary','שיחות קודמות בשולחן'));
+    for(const past of previous){
+      const group=node('article');group.append(node('h3',past.title));
+      for(const card of board.cards.filter(c=>c.talk===past.id))group.append(node('p',card.body));
+      details.append(group);
+    }
+    list.append(details);
+  }
+  if(!t){list.append(node('p','אין שיחה כרגע. אפשר להציע נושא בלוח השיחות.'));history();return;}
   list.append(node('h2',t.title));
   const actions=node('div',undefined,'actions');
   actions.append(button('להוסיף תובנה',()=>contribute(t,'note'),'primary'),button('לפרסם תוצר',()=>contribute(t,'harvest')),
@@ -231,10 +243,11 @@ function tableTools(list){
     if(c.kind==='note')a.append(button('להביא לשוק',()=>contribute(t,'harvest',c.body)));
     list.append(a);
   }
+  history();
 }
 function render(){
   if(!board)return;
-  const list=$('list');list.replaceChildren();
+  const list=$('list');rememberAgenda();list.replaceChildren();
   if(tableView){tableTools(list);return;}
   for(const id of ['live','market'])$(id).setAttribute('aria-pressed',String(view===id));
   if(view==='market'){
@@ -257,6 +270,6 @@ function render(){
   agenda(list);
 }
 $('new').onclick=async()=>{try{await newTalk();}catch(e){$('status').textContent=e.message;}};
-for(const id of ['live','market'])$(id).onclick=()=>{view=id;selected=null;render();};
+for(const id of ['live','market'])$(id).onclick=()=>{view=id;render();};
 refresh();setInterval(()=>{if(!document.hidden)refresh();},4000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});
