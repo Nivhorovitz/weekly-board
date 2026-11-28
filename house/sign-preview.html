@@ -9,13 +9,15 @@
 <form><label>שולחן<select id="desk"></select></label><label>נושא השיחה<input id="topic" maxlength="140" required></label><button type="submit">הצגת הנושא</button><button type="button" id="close">סיום השיחה</button></form>
 <div class="map-scroll"><figure aria-label="חצר המרחב הפתוח עם שלטי הנושאים"><img alt="חמשת השולחנות בחצר המרחב הפתוח" src="https://s3.sparkco.space/imagebucket/room_backgrounds/BRZ7hO48ELbW0Eim6J1j"></figure></div><p id="status" role="status"></p></main>
 <script type="module">
-const room = 'OpenSpaceDemoView001';
-const channel = new BroadcastChannel('olive-house/table-topics/v1');
+const liveRoom = new URLSearchParams(location.search).get('room');
+const live = /^[A-Za-z0-9]{20}$/.test(liveRoom || '');
+const room = live ? liveRoom : 'OpenSpaceDemoView001';
+const channel = !live && typeof BroadcastChannel === 'function' ? new BroadcastChannel('olive-house/table-topics/v1') : null;
 const tables = [['זית',864,375],['הבוסתן',1603,398],['גפן',2365,406],['חצר',825,933],['כרם',2366,788]];
 const topics = new Map([['זית','מה יגרום לאנשים לחזור למפגש הבא?'],['גפן','איזו יוזמה נרצה להוביל יחד?']]);
 const desk = document.getElementById('desk'), topic = document.getElementById('topic'), status = document.getElementById('status');
-function publish() { channel.postMessage({type:'titles',room,titles:[...topics].map(([desk,title])=>({desk,title}))}); }
-channel.onmessage = ({data}) => { if(data?.type==='read'&&data.room===room) publish(); };
+function publish() { channel?.postMessage({type:'titles',room,titles:[...topics].map(([desk,title])=>({desk,title}))}); }
+if (channel) channel.onmessage = ({data}) => { if(data?.type==='read'&&data.room===room) publish(); };
 for (const [name,x,y] of tables) {
   desk.add(new Option(name,name));
   const frame = document.createElement('iframe');
@@ -28,6 +30,13 @@ for (const [name,x,y] of tables) {
 desk.onchange=()=>{topic.value=topics.get(desk.value)||'';};desk.onchange();
 document.querySelector('form').onsubmit=e=>{ e.preventDefault();const value=topic.value.trim();if(!value)return;topics.set(desk.value,value);publish();status.textContent='הנושא מוצג מעל שולחן '+desk.value; };
 document.getElementById('close').onclick=()=>{topics.delete(desk.value);desk.onchange();publish();status.textContent='השיחה הסתיימה והשלט הוסר משולחן '+desk.value; };
-setInterval(publish,4000);
+if (live) {
+  document.querySelector('h1').textContent = 'נושאי השיחה עכשיו';
+  document.querySelector('main > p').textContent = 'שיחות פעילות במרחב הפתוח';
+  document.title='מפת השיחות במרחב הפתוח · ספארקו';
+  document.querySelector('form').remove();
+} else {
+  setInterval(publish,4000);
+}
 </script>
 </html>
