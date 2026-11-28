@@ -150,9 +150,24 @@ function visit(t){
   }
   $('status').textContent='השיחה מתקיימת בשולחן '+t.desk+' · '+(board.rooms.find(r=>r.room===t.room)?.label||'')+'. אפשר להתיישב בגרירת האווטר.';
 }
+function talkLocation(t) {
+  const label = board.rooms.find(r => r.room === t.room)?.label || '';
+  const location = node('small', t.host + ' · ');
+  const map = node('a', t.desk + ' · ' + label + ' ↗');
+  const url = new URL('sign-preview.html', window.location.href);
+  url.searchParams.set('room', t.room);
+  map.href = url.href;
+  map.target = '_blank';
+  map.rel = 'noopener';
+  map.title = 'הצגת מפת השיחות בחלון נפרד';
+  map.setAttribute('aria-label', map.title + ' · ' + t.desk + ' · ' + label);
+  location.append(map);
+  if (t.closed) location.append(' · הסתיימה');
+  return location;
+}
 function record(t) {
   const area=node('article');
-  area.append(button(t.title,()=>{selected=t.id;view='live';render();if(!t.closed)visit(t);},'topic'),node('small',t.host+' · '+t.desk+' · '+(board.rooms.find(r=>r.room===t.room)?.label||'')+(t.closed?' · הסתיימה':'')));
+  area.append(button(t.title,()=>{selected=t.id;view='live';render();if(!t.closed)visit(t);},'topic'),talkLocation(t));
   if(t.parent){const p=board.talks.find(x=>x.id===t.parent);if(p)area.append(node('small','המשך לשיחה ״'+p.title+'״'));}
   return area;
 }
@@ -183,7 +198,7 @@ function render(){
     for(const talk of board.talks.slice().sort((a,b)=>Number(a.closed)-Number(b.closed)))list.append(record(talk));
     return;
   }
-  list.append(button('חזרה ללוח',()=>{selected=null;render();}),node('h2',t.title),node('small',t.host+' · '+t.desk));
+  list.append(button('חזרה ללוח',()=>{selected=null;render();}),node('h2',t.title),talkLocation(t));
   if(!t.closed){
     const actions=node('div',undefined,'actions');
     actions.append(button('אל השולחן',()=>visit(t)),button('להוסיף תובנה',()=>contribute(t,'note')),button('לפרסם תוצר',()=>contribute(t,'harvest')),button('להזמין ליוזמה',()=>contribute(t,'initiative'),'primary'),button('לפתוח שיחת המשך',()=>newTalk(t.id)));
