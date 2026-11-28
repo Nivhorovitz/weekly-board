@@ -1,4 +1,8 @@
-<!doctype html><html lang="he" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>מרחב פתוח · הבית ההשתתפותי</title><style>
+<!doctype html><html lang="he" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>מרחב פתוח · הבית ההשתתפותי</title><script>
+if (new URLSearchParams(location.search).get('view') === 'wall') {
+  document.documentElement.classList.add('wall');
+}
+</script><style>
 *{box-sizing:border-box}html,body{background:transparent}body{margin:0;color:#293526;font:16px/1.5 system-ui,sans-serif}main{max-width:760px;margin:auto;padding:clamp(10px,3vw,24px)}header,nav,.actions{display:flex;align-items:center;gap:8px;flex-wrap:wrap}header{justify-content:space-between}h1,h2,h3,p{margin:.25em 0}h1{font-size:clamp(18px,4vw,26px)}h2{font-size:20px}h3{font-size:16px}button,input,select,textarea{font:inherit}button{cursor:pointer;border:1px solid #a8ad99;border-radius:9px;background:#fffdf7;color:inherit;padding:5px 11px}button:disabled{opacity:.55}button.primary,[aria-pressed=true]{background:#435c38;color:white;border-color:#435c38}button.topic{border:none;padding:3px 0;background:none;font-weight:700;text-align:start;color:#354e2d}nav{margin:8px 0}section,article{border-top:1px solid #c9cbbb;padding:10px 0}small,label{display:block}small{color:#55604e}input,select,textarea{display:block;width:100%;padding:8px;border:1px solid #9ca591;border-radius:7px;margin:3px 0 10px;background:#fffefb}textarea{min-height:70px}button:focus-visible{outline:3px solid #a47b36}#status{font-size:14px;color:#744411}dialog{color:inherit;width:min(460px,95vw);max-height:94vh;border:1px solid #a2ad95;border-radius:14px;background:#faf9f2}dialog::backdrop{background:#19231577}.actions{margin-top:7px}article p{white-space:pre-wrap;overflow-wrap:anywhere}@media(prefers-reduced-motion:no-preference){article{animation:show .22s ease-out}@keyframes show{from{opacity:.5}to{opacity:1}}}
 
 .launcher{display:none}
@@ -16,6 +20,30 @@
   button.topic{background:#faf8efed}
   #status:empty{display:none}
 }
+
+.wall{height:100%;scrollbar-color:#87785c transparent}
+.wall body{height:100%;font-size:clamp(16px,2.6vw,28px);line-height:1.28}
+.wall main{display:flex;flex-direction:column;max-width:1280px;height:100%;padding:clamp(4px,1vw,12px);gap:clamp(4px,1vw,12px)}
+.wall header{flex:none;position:relative;min-height:1.95em;padding:.22em .7em;border:1px solid #91754d;border-radius:.32em;color:#fff7df;background:linear-gradient(104deg,#59412c,#785838 38%,#523c29);box-shadow:inset 0 1px #c1a477,0 2px 5px #291c182b}
+.wall h1{padding:0;background:none;color:inherit;font-size:1.45em;line-height:1.02}
+.wall nav{flex:none;align-self:start;margin:0;padding:.1em;gap:.15em;border-radius:.38em;background:#ece6d6f5}
+.wall nav button{border:0;background:transparent}
+.wall nav [aria-pressed=true]{background:#394c39}
+.wall button{font-size:.89em;padding:.22em .65em}
+.wall #new{font-weight:650;color:#293b2a;background:#f5eed9;border:0}
+.wall #status{margin:0;font-size:.78em}
+.wall #list{min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#867456 transparent}
+.wall #list:has(>article):not(:has(>h2)){display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14em),1fr));gap:.35em;align-content:start}
+.wall article,.wall #list>p{height:fit-content;margin:0;padding:.36em .65em;border:0;border-inline-start:.16em solid #606e49;border-radius:.24em;background:#faf5e8f7;color:#243524}
+.wall article .topic{max-width:100%;padding:0;background:none;font-size:1.03em;line-height:1.15;overflow-wrap:anywhere}
+.wall article small,.wall article h3,.wall article p{padding:0;background:none}
+.wall small{font-size:.77em;line-height:1.26}
+.wall small a{color:#354b39;text-underline-offset:.12em}
+.wall #list>h2,.wall #list>small{margin-block:.2em}
+.wall dialog{font-size:clamp(16px,2.3vw,25px);width:min(23em,96vw);max-height:97vh;padding:.6em .9em;overflow:auto}
+.wall dialog h2{font-size:1.2em}
+.wall dialog input,.wall dialog select,.wall dialog textarea{margin:0 0 .3em;padding:.16em .45em}
+@media(max-width:128px),(max-height:70px){.wall main{display:none}}
 </style><body><a class="launcher" id="launcher" href="./" target="_blank" rel="noopener" aria-label="לוח השיחות בחלון נפרד" title="לוח השיחות בחלון נפרד">
 <svg viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6h26a2 2 0 0 1 2 2v20a2 2 0 0 1-2 2H18l-8 6v-6H7a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" fill="#34452f" stroke="#f5f1dc" stroke-width="2.3"/><path d="M12 14h16m-16 7h10" stroke="#f5f1dc" stroke-width="2.5"/></svg>
 <span>לוח השיחות</span></a><main><header><h1>מרחב פתוח</h1><button id="new" class="primary" disabled>להציע שיחה</button></header><nav aria-label="תצוגה"><button id="live">לוח השיחות</button><button id="market">שוק הרעיונות</button></nav><p id="status" role="status">מתחברים ללוח…</p><div id="list"></div></main><dialog><form><h2 id="heading"></h2><div id="fields"></div><p id="error" role="alert"></p><div class="actions"><button class="primary" id="save">שמירה</button><button type="button" id="cancel">חזרה</button></div></form></dialog><script src="https://sparkco-olive-house.nivos8.chatgpt.site/lib/sparkco-bridge.js"></script><script type="module" src="house.js?v=1.1.0"></script></html>
