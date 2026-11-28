@@ -1,3 +1,4 @@
+import {watchSeat} from './seating.js';
 import {timeline,rememberAgenda} from './agenda.js';
 import {desks as deskNames,inSession,overlaps,rounds,numberOption,timeRange} from './timing.js';
 const $ = id => document.getElementById(id);
@@ -7,6 +8,8 @@ let room = params.get('room') || initialRoom;
 const tableView=params.get('view')==='table';
 const desk=params.get('desk') || '';
 const preview=params.get('preview')==='agenda';
+let toolsVisible=!document.documentElement.classList.contains('away');
+let visitEpoch=0;
 const bridge = window.SparkcoBridge;
 if(tableView){
   document.documentElement.classList.add('table-view');
@@ -52,7 +55,7 @@ if (!preview && bridge && window.parent !== window) {
     setLauncher(message.widget?.visibility === 'plugin_controlled');
   });
   bridge.onViewport?.(message => { room = message.room_id || room; });
-  bridge.ready('2.1.0');
+  bridge.ready('2.2.0');
 }
 const storageKey = 'open-house/device';
 let device, storageAvailable = true;
@@ -91,13 +94,32 @@ async function rpc(name, values) {
 function activeRoom(r) {
   return r.room===initialRoom || r.room===room || Date.now()-Date.parse(r.seen_at)<180000;
 }
+function reachable(talk) {
+  return board.rooms.some(r => r.room === talk.room && activeRoom(r));
+}
+let noticeTimer, routeTimer;
+function clearNotice() {
+  clearTimeout(noticeTimer);
+  clearTimeout(routeTimer);
+  if ($('status').dataset.notice) {
+    delete $('status').dataset.notice;
+    $('status').textContent='';
+  }
+}
+function notice(text) {
+  clearNotice();
+  $('status').textContent=text;
+  $('status').dataset.notice='true';
+  noticeTimer=setTimeout(clearNotice,9000);
+}
 let lastSeen=0;
 async function refresh() {
   if(preview){
     if(!board){const {previewData}=await import('./preview.js');board=previewData(params,room);$('new').hidden=true;$('status').textContent='';render();}
     return;
   }
-  if(refreshing)return;
+  if(refreshing || !toolsVisible)return;
+  const epoch=visitEpoch;
   refreshing=true;
   try {
     if (!tableView && room!==initialRoom && window.parent!==window && Date.now()-lastSeen>30000) {
@@ -107,7 +129,8 @@ async function refresh() {
     }
     if(tableView && !deskNames.includes(desk)) throw Error('unknown table');
     const data=await rpc('os_house_view',{room_id:room,desk_name:tableView?desk:''});
-    const json=JSON.stringify(data)+data.talks.map(t=>inSession(t)?'1':'0').join(''); board=data;
+    if(epoch!==visitEpoch || !toolsVisible)return;
+    const json=JSON.stringify(data)+data.talks.map(t=>inSession(t)?'1':'0').join('')+data.rooms.map(r=>activeRoom(r)?'1':'0').join(''); board=data;
     publishTitles();
     if(json!==lastData && !document.querySelector('.agenda-scroll.dragging')){lastData=json;render();}
     $('new').disabled=!storageAvailable;
@@ -115,7 +138,7 @@ async function refresh() {
       $('status').textContent=storageAvailable?'':'כדי לפרסם, יש לאפשר אחסון בדפדפן.';
       $('status').dataset.connection='ok';
     }
-  } catch { $('status').textContent='החיבור ללוח נקטע. מנסים שוב…'; $('status').dataset.connection='offline'; }
+  } catch { if(!toolsVisible || epoch!==visitEpoch)return; clearNotice(); $('status').textContent='החיבור ללוח נקטע. מנסים שוב…'; $('status').dataset.connection='offline'; }
   finally{refreshing=false;}
 }
 function field(name,title,type='input',max=140,value='') {
@@ -124,6 +147,7 @@ function field(name,title,type='input',max=140,value='') {
   label.append(input);$('fields').append(label);return input;
 }
 function showForm(title,saveLabel,setup,fn) {
+  if(!toolsVisible)return;
   if(!storageAvailable)throw Error('יש לאפשר אחסון כדי לפרסם.');
   $('save').disabled=false;
   $('heading').textContent=title;$('save').textContent=saveLabel;$('error').textContent='';
@@ -131,7 +155,7 @@ function showForm(title,saveLabel,setup,fn) {
 }
 $('cancel').onclick=()=>dialog.close();
 form.onsubmit=async e=>{
-  e.preventDefault();if(saving)return;saving=true;$('save').disabled=true;
+  e.preventDefault();if(saving || !toolsVisible || !onSave)return;saving=true;$('save').disabled=true;
   try{await onSave(Object.fromEntries(new FormData(form)));dialog.close();await refresh();render();}
   catch(error){$('error').textContent=error.message;}
   finally{saving=false;$('save').disabled=false;}
@@ -188,21 +212,30 @@ function contribute(t,kind,initial=''){
   },v=>write(kind,id,{target:t.id,body:v.body,invitation:v.invite||'',display_name:v.name||''}));
 }
 function visit(t){
-  if(!inSession(t) && t.starts_at && Date.parse(t.starts_at)>Date.now()){$('status').textContent='השיחה תתחיל ב־'+timeRange(t.starts_at,t.ends_at)+' · שולחן '+t.desk;return;}
-  if(t.closed || (t.ends_at && Date.parse(t.ends_at)<=Date.now())){$('status').textContent='השיחה הסתיימה. התוצרים נשארו כאן.';return;}
-  const dest=board.rooms.find(r=>r.room===t.room);
-  if(!dest || !activeRoom(dest)){ $('status').textContent='העותק אינו פעיל כרגע. תוצרי השיחה זמינים כאן.';return; }
-  if(room!==t.room && bridge?.navigate(t.room)){
-    $('status').textContent='עוברים אל '+dest.label+' · '+t.desk;
-    setTimeout(()=>{if(room!==t.room)$('status').textContent='המעבר לחדר לא אושר. נשארתם בשיחה הנוכחית.';},4500);
+  if(!t.closed && Date.parse(t.starts_at)>Date.now()){
+    notice('השיחה תתחיל ב־'+timeRange(t.starts_at,t.ends_at)+' · שולחן '+t.desk);
     return;
   }
-  $('status').textContent='השיחה מתקיימת בשולחן '+t.desk+' · '+(board.rooms.find(r=>r.room===t.room)?.label||'')+'. אפשר להתיישב בגרירת האווטר.';
+  if(!inSession(t) || !reachable(t))return;
+  const dest=board.rooms.find(r=>r.room===t.room);
+  if(room!==t.room){
+    if(!bridge?.navigate(t.room)){notice(dest.label+' · שולחן '+t.desk);return;}
+    notice('עוברים אל '+dest.label+' · '+t.desk);
+    routeTimer=setTimeout(()=>{if(room!==t.room)notice('המעבר לחדר לא הושלם. אפשר לנסות שוב.');},4500);
+    return;
+  }
+  notice('השיחה מתקיימת בשולחן '+t.desk+' · '+dest.label+'. אפשר להתיישב בגרירת האווטר.');
 }
 function agenda(list){
-  const upcoming=board.talks.filter(t=>!t.closed && (!t.ends_at || Date.parse(t.ends_at)>Date.now()))
+  const upcoming=board.talks.filter(t=>!t.closed && (!t.ends_at || Date.parse(t.ends_at)>Date.now())
+      && (reachable(t) || Date.parse(t.starts_at)>Date.now()))
     .sort((a,b)=>Date.parse(a.starts_at||a.opened)-Date.parse(b.starts_at||b.opened));
-  const makeTopic=t=>{const action=button(t.title,()=>{if(!preview)visit(t);},'topic');action.title=t.host+' · '+t.title;return action;};
+  const makeTopic=t=>{
+    const action=!preview && (Date.parse(t.starts_at)>Date.now() || (inSession(t) && reachable(t)))
+      ? button(t.title,()=>visit(t),'topic') : node('span',t.title,'topic');
+    action.title=t.host+' · '+t.title;
+    return action;
+  };
   if(timeline(list,upcoming,board.rooms,scheduleParams,makeTopic))return;
   if(!upcoming.length){list.append(node('p','הלוח פתוח להצעות שיחה.'));return;}
   const table=node('table'),head=table.createTHead().insertRow();
@@ -246,7 +279,7 @@ function tableTools(list){
   history();
 }
 function render(){
-  if(!board)return;
+  if(!board || !toolsVisible)return;
   const list=$('list');rememberAgenda();list.replaceChildren();
   if(tableView){tableTools(list);return;}
   for(const id of ['live','market'])$(id).setAttribute('aria-pressed',String(view===id));
@@ -258,7 +291,7 @@ function render(){
       const a=node('article');a.append(node('small',t.title+' · '+t.desk),node('h3',c.body));
       if(c.kind==='initiative'){
         a.append(node('p',c.invitation),node('small','בהזמנת '+c.host));
-        if(inSession(t))a.append(button('לבקר בשולחן',()=>visit(t)));
+        if(inSession(t) && reachable(t))a.append(button('לבקר בשולחן',()=>visit(t)));
         a.append(button(c.joined?'לבטל הצטרפות':'להצטרף לצעד הבא',()=>{
           if(c.joined)return write('leave',c.id).then(refresh);
           showForm('הצטרפות ליוזמה','להצטרף',()=>field('name','איך להציג את שמך למשתתפים?','input',60),v=>write('join',c.id,{display_name:v.name}));
@@ -270,6 +303,21 @@ function render(){
   agenda(list);
 }
 $('new').onclick=async()=>{try{await newTalk();}catch(e){$('status').textContent=e.message;}};
-for(const id of ['live','market'])$(id).onclick=()=>{view=id;render();};
+for(const id of ['live','market'])$(id).onclick=()=>{clearNotice();view=id;render();};
+if(tableView && window!==parent){
+  watchSeat(room,desk,visible=>{
+    if(toolsVisible===visible)return;
+    toolsVisible=visible;
+    visitEpoch++;
+    document.documentElement.classList.toggle('away',!visible);
+    if(visible){refresh();return;}
+    if(dialog.open)dialog.close();
+    onSave=null;
+    board=null;
+    lastData='';
+    $('list').replaceChildren();
+    $('status').textContent='';
+  });
+}
 refresh();setInterval(()=>{if(!document.hidden)refresh();},4000);
 document.addEventListener('visibilitychange',()=>{if(!document.hidden)refresh();});

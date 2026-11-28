@@ -38,7 +38,7 @@
       "center_y": 924,
       "width": 430,
       "height": 120,
-      "url": "https://nivhorovitz.github.io/weekly-board/house/sign.html?room=@@room-uid@@&desk=%D7%97%D7%A6%D7%A8&transparent=@@is-transparent@@"
+      "url": "https://nivhorovitz.github.io/weekly-board/house/sign.html?room=@@room-uid@@&desk=%D7%97%D7%A6%D7%A8&transparent=@@is-transparent@@&viewer_desk=@@seat-area-name@@"
     },
     {
       "table": "כרם",
@@ -113,5 +113,6 @@
       "transparent": true,
       "url": "https://nivhorovitz.github.io/weekly-board/house/?view=table&room=@@room-uid@@&desk=%D7%9B%D7%A8%D7%9D&transparent=@@is-transparent@@"
     }
-  ]
+  ],
+  "interaction_access": "locked"
 }

@@ -1,5 +1,10 @@
 <!doctype html><html lang="he" dir="rtl"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>מרחב פתוח · הבית ההשתתפותי</title><script>
-if (['wall','table'].includes(new URLSearchParams(location.search).get('view'))) {
+const options = new URLSearchParams(location.search);
+if (options.get('view') === 'table') {
+  document.documentElement.classList.add('table-view');
+  if (parent !== window && !['setup','help','usage'].some(k=>options.get(k)==='true')) document.documentElement.classList.add('away');
+}
+if (['wall','table'].includes(options.get('view'))) {
   document.documentElement.classList.add('wall');
 }
 </script><style>
@@ -24,17 +29,17 @@ if (['wall','table'].includes(new URLSearchParams(location.search).get('view')))
 .wall{height:100%;scrollbar-color:#87785c transparent}
 .wall body{height:100%;font-size:clamp(16px,2.6vw,28px);line-height:1.28}
 .wall main{display:flex;flex-direction:column;max-width:1280px;height:100%;padding:clamp(4px,1vw,12px);gap:clamp(4px,1vw,12px)}
-.wall header{flex:none;position:relative;min-height:1.95em;padding:.22em .7em;border:1px solid #91754d;border-radius:.32em;color:#fff7df;background:linear-gradient(104deg,#59412c,#785838 38%,#523c29);box-shadow:inset 0 1px #c1a477,0 2px 5px #291c182b}
+.wall header{flex:none;position:relative;color:#fffdf3}
 .wall h1{padding:0;background:none;color:inherit;font-size:1.45em;line-height:1.02}
-.wall nav{flex:none;align-self:start;margin:0;padding:.1em;gap:.15em;border-radius:.38em;background:#ece6d6f5}
-.wall nav button{border:0;background:transparent}
-.wall nav [aria-pressed=true]{background:#394c39}
+.wall nav{flex:none;align-self:start;margin:0;padding:.1em;gap:.15em;border-radius:.38em;background:transparent}
+.wall nav button{color:#fffdf3;border:1px solid #fffcda5c;background:#302e22d9}
+.wall nav [aria-pressed=true]{background:#374d34ed;border-color:#d5dfa6}
 .wall button{font-size:.89em;padding:.22em .65em}
 .wall #new{font-weight:650;color:#293b2a;background:#f5eed9;border:0}
 .wall #status{margin:0;font-size:.78em}
 .wall #list{min-height:0;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#867456 transparent}
 .wall #list:has(>article):not(:has(>h2)){display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,14em),1fr));gap:.35em;align-content:start}
-.wall article,.wall #list>p{height:fit-content;margin:0;padding:.36em .65em;border:0;border-inline-start:.16em solid #606e49;border-radius:.24em;background:#faf5e8f7;color:#243524}
+.wall article,.wall #list>p{height:fit-content;margin:0;padding:.36em .65em;border:0;border-radius:.24em;background:transparent;color:#fffdf3}
 .wall article .topic{max-width:100%;padding:0;background:none;font-size:1.03em;line-height:1.15;overflow-wrap:anywhere}
 .wall article small,.wall article h3,.wall article p{padding:0;background:none}
 .wall small{font-size:.77em;line-height:1.26}
@@ -56,13 +61,13 @@ th{background:#46533e;color:#fffdf1;font-size:.9em;font-weight:600;position:stic
 td:first-child,td:nth-child(n+3){white-space:nowrap;font-variant-numeric:tabular-nums}
 td .topic,.wall td .topic{background:transparent;padding:0;font:650 1em/1.12 system-ui;color:#31472e;overflow-wrap:anywhere}
 .wall #list:has(table){display:block}
-.table-view main>header{display:block;min-height:0;padding:3px 8px;width:fit-content}
+.table-view main>header{display:none}
 .table-view header h1{font-size:15px}
-.table-view #list{display:block;background:#f5f0e3f7;border-radius:8px;padding:8px;font-size:16px}
+.table-view #list{display:block;background:transparent;padding:3px;font-size:16px}
 .table-view #list h2{font-size:20px;padding:0;background:none}
-.table-view #list .actions{gap:4px;margin-block:6px}
+.table-view #list .actions{gap:4px;margin:4px 0 6px}
 .table-view #list button{font-size:15px;line-height:1.15;padding:4px 7px}
-.table-view #list article{padding:4px 0;background:none;border:0;border-top:1px solid #c8c7af;border-radius:0}
+.table-view #list article{padding:4px 0;background:none;border:0;border-radius:0}
 .table-view #list p{padding:0;background:none;font-size:16px}
 .wall th,.wall td{padding-block:1px;line-height:1.06}.wall td .topic{line-height:1.05;vertical-align:middle}.wall table{font-size:17px}.table-view details{font-size:14px;margin-top:7px}.table-view summary{cursor:pointer}.wall dialog{font-size:16px}.wall dialog h2{font-size:18px}
 #list:has(.agenda-timeline){display:flex;flex-direction:column;overflow:hidden;min-height:0}
@@ -88,6 +93,26 @@ table.schedule-grid{width:max-content;min-width:0;border-collapse:separate;borde
 .schedule-arrow.later span{transform:rotate(-135deg)}
 .agenda-scroll:focus-visible{outline:2px solid #b3934e;outline-offset:-2px}
 .agenda-preview main{max-width:760px;max-height:280px}
+
+/* The room is the canvas. Tint only the text and controls that need contrast. */
+.away body{display:none!important}
+.wall #status:empty{display:none}
+.wall #list article,.wall #list>p{padding:1px 0}
+.wall #list :is(h2,h3,p,small,summary),.wall #list>p,.wall #status:not(:empty){
+  display:block;width:fit-content;max-width:100%;margin:2px 0;
+  padding:2px 7px;border-radius:4px;background:#233020d6;color:#fffdf4;
+  line-height:1.2;overflow-wrap:anywhere;
+}
+.wall #list article>small{font-size:13px}
+.wall #list article>button{margin:2px 0 0 4px}
+.wall #list button:not(.topic):not(.schedule-arrow){color:#fffdf4;background:#353b2ee8;border:1px solid #f8f1cf77}
+.wall #list button.primary{background:#3c5734f0!important;border-color:#c4d89d!important}
+.wall table,.wall .schedule-grid td:empty,.wall .schedule-grid tr:nth-child(even) td:empty{background:transparent}
+.wall tbody td{color:#fffdf3;background:#293628bf;border-color:#f1e6c357}
+.wall tbody td .topic{color:inherit}
+.wall th,.wall .schedule-grid tbody th{background:#2f422fee;color:#fffdf3;border-color:#dbd5b97a}
+.wall #list table th small{display:inline;padding:0;background:none;color:inherit}
+.wall button:focus-visible,.wall summary:focus-visible{outline:2px solid #eddd94;outline-offset:1px}
 </style><body><a class="launcher" id="launcher" href="./" target="_blank" rel="noopener" aria-label="לוח השיחות בחלון נפרד" title="לוח השיחות בחלון נפרד">
 <svg viewBox="0 0 40 40" aria-hidden="true" fill="none" stroke-linecap="round" stroke-linejoin="round"><path d="M7 6h26a2 2 0 0 1 2 2v20a2 2 0 0 1-2 2H18l-8 6v-6H7a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2Z" fill="#34452f" stroke="#f5f1dc" stroke-width="2.3"/><path d="M12 14h16m-16 7h10" stroke="#f5f1dc" stroke-width="2.5"/></svg>
-<span>לוח השיחות</span></a><main><header><h1>מרחב פתוח</h1><button id="new" class="primary" disabled>להציע שיחה</button></header><nav aria-label="תצוגה"><button id="live">לוח השיחות</button><button id="market">שוק הרעיונות</button></nav><p id="status" role="status">מתחברים ללוח…</p><div id="list"></div></main><dialog><form><h2 id="heading"></h2><div id="fields"></div><p id="error" role="alert"></p><div class="actions"><button class="primary" id="save">שמירה</button><button type="button" id="cancel">חזרה</button></div></form></dialog><script src="https://sparkco-olive-house.nivos8.chatgpt.site/lib/sparkco-bridge.js"></script><script type="module" src="entry.js?v=2.1"></script></html>
+<span>לוח השיחות</span></a><main><header><h1>מרחב פתוח</h1><button id="new" class="primary" disabled>להציע שיחה</button></header><nav aria-label="תצוגה"><button id="live">לוח השיחות</button><button id="market">שוק הרעיונות</button></nav><p id="status" role="status"></p><div id="list"></div></main><dialog><form><h2 id="heading"></h2><div id="fields"></div><p id="error" role="alert"></p><div class="actions"><button class="primary" id="save">שמירה</button><button type="button" id="cancel">חזרה</button></div></form></dialog><script src="https://sparkco-olive-house.nivos8.chatgpt.site/lib/sparkco-bridge.js"></script><script type="module" src="entry.js?v=2.2"></script></html>

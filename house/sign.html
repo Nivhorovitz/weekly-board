@@ -10,6 +10,7 @@ output:empty{display:none}output:not(:empty)::before{content:attr(data-desk) ' �
 </style>
 <output id="title" aria-live="polite"></output>
 <script type="module">
+import {announceSeat} from './seating.js';
 import {inSession} from './timing.js';
 const params = new URLSearchParams(location.search);
 const room = params.get('room');
@@ -17,6 +18,7 @@ const desk = params.get('desk');
 const title = document.querySelector('output');
 title.dataset.desk=desk || '';
 if (/^[A-Za-z0-9]{20}$/.test(room) && ['זית','גפן','חצר','כרם','הבוסתן'].includes(desk)) {
+  announceSeat(room,params);
   let lastBoardUpdate = 0;
   let loading = false;
   const channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('olive-house/table-topics/v1') : null;
