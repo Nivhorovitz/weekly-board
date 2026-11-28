@@ -3,10 +3,39 @@ const params = new URLSearchParams(location.search);
 const initialRoom = 'SiP9e8gVkEFw6zkqYuDW';
 let room = params.get('room') || initialRoom;
 const bridge = window.SparkcoBridge;
+const launcher = $('launcher');
+launcher.href = location.href;
+function setLauncher(nativeOpen) {
+  const label = nativeOpen ? 'פתיחת לוח השיחות' : 'לוח השיחות בחלון נפרד';
+  launcher.title = label;
+  launcher.setAttribute('aria-label', label);
+  launcher.onclick = nativeOpen ? async event => {
+    event.preventDefault();
+    try {
+      const result = await bridge.setPresence('expanded', {audience:'self'});
+      if (result?.ok) return;
+    } catch { /* The host can decline expansion. Keep a regular link available. */ }
+    setLauncher(false);
+    launcher.focus();
+  } : null;
+}
+const signFeed = typeof BroadcastChannel === 'function' ? new BroadcastChannel('olive-house/table-topics/v1') : null;
+function publishTitles() {
+  if (!board || !signFeed) return;
+  const titles = board.talks.filter(t => !t.closed && t.room === room)
+    .map(t => ({desk:t.desk, title:t.title}));
+  signFeed.postMessage({type:'titles', room, titles});
+}
+if (signFeed) signFeed.onmessage = ({data}) => {
+  if (data?.type === 'read' && data.room === room) publishTitles();
+};
 if (bridge && window.parent !== window) {
-  bridge.onInit(message => { room = message.room_id || room; });
+  bridge.onInit(message => {
+    room = message.room_id || room;
+    setLauncher(message.widget?.visibility === 'plugin_controlled');
+  });
   bridge.onViewport?.(message => { room = message.room_id || room; });
-  bridge.ready('1.0.0');
+  bridge.ready('1.1.0');
 }
 const storageKey = 'open-house/device';
 let device, storageAvailable = true;
@@ -54,6 +83,7 @@ async function refresh() {
     }
     const data=await rpc('os_house_board',{});
     const json=JSON.stringify(data); board=data;
+    publishTitles();
     if(json!==lastData){lastData=json;render();}
     $('new').disabled=!storageAvailable;
     if($('status').dataset.connection!=='ok'){
