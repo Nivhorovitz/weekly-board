@@ -1,0 +1,52 @@
+{
+  "room_template": "SiP9e8gVkEFw6zkqYuDW",
+  "canvas": [
+    3200,
+    1800
+  ],
+  "placement": "On the map",
+  "interaction": "Display only",
+  "transparent": true,
+  "signs": [
+    {
+      "table": "הבוסתן",
+      "center_x": 1603,
+      "center_y": 398,
+      "width": 430,
+      "height": 94,
+      "url": "https://nivhorovitz.github.io/weekly-board/house/sign.html?room=@@room-uid@@&desk=%D7%94%D7%91%D7%95%D7%A1%D7%AA%D7%9F&transparent=@@is-transparent@@"
+    },
+    {
+      "table": "זית",
+      "center_x": 864,
+      "center_y": 374,
+      "width": 430,
+      "height": 94,
+      "url": "https://nivhorovitz.github.io/weekly-board/house/sign.html?room=@@room-uid@@&desk=%D7%96%D7%99%D7%AA&transparent=@@is-transparent@@"
+    },
+    {
+      "table": "גפן",
+      "center_x": 2365,
+      "center_y": 405,
+      "width": 430,
+      "height": 94,
+      "url": "https://nivhorovitz.github.io/weekly-board/house/sign.html?room=@@room-uid@@&desk=%D7%92%D7%A4%D7%9F&transparent=@@is-transparent@@"
+    },
+    {
+      "table": "חצר",
+      "center_x": 825,
+      "center_y": 934,
+      "width": 430,
+      "height": 94,
+      "url": "https://nivhorovitz.github.io/weekly-board/house/sign.html?room=@@room-uid@@&desk=%D7%97%D7%A6%D7%A8&transparent=@@is-transparent@@"
+    },
+    {
+      "table": "כרם",
+      "center_x": 2366,
+      "center_y": 790,
+      "width": 430,
+      "height": 94,
+      "url": "https://nivhorovitz.github.io/weekly-board/house/sign.html?room=@@room-uid@@&desk=%D7%9B%D7%A8%D7%9D&transparent=@@is-transparent@@"
+    }
+  ]
+}
