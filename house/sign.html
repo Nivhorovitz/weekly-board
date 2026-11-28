@@ -4,8 +4,8 @@
 <title>נושא השיחה בשולחן</title>
 <style>
 *{box-sizing:border-box}html,body{margin:0;height:100%;background:transparent;overflow:hidden}
-body{display:grid;place-items:center;padding:2px;font:650 clamp(13px,5vw,21px)/1.25 system-ui,sans-serif;pointer-events:none}
-output{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden;text-align:center;overflow-wrap:anywhere;max-width:100%;max-height:100%;color:#fffcef;background:#33432fec;border-radius:9px;padding:3px 9px}
+body{display:grid;place-items:center;grid-template:minmax(0,1fr)/minmax(0,1fr);padding:0;font:650 20px/1.13 system-ui,sans-serif;pointer-events:none}
+output{display:block;width:max-content;overflow:hidden;text-align:center;overflow-wrap:anywhere;max-width:100%;max-height:100%;color:#fffcef;background:#33432fec;border-radius:9px;padding:3px 7px}
 output:empty{display:none}output:not(:empty)::before{content:attr(data-desk) ' · ';font-size:.78em;color:#dce6cb;font-weight:550}
 </style>
 <output id="title" aria-live="polite"></output>
@@ -22,10 +22,21 @@ if (/^[A-Za-z0-9]{20}$/.test(room) && ['זית','גפן','חצר','כרם','הב
   let lastBoardUpdate = 0;
   let loading = false;
   const channel = typeof BroadcastChannel === 'function' ? new BroadcastChannel('olive-house/table-topics/v1') : null;
+  function fitTitle() {
+    if (!title.textContent) return;
+    title.style.fontSize='';
+    for (let size=19; size>=10 && title.scrollHeight>title.clientHeight; size--) {
+      title.style.fontSize=size+'px';
+    }
+  }
+  new ResizeObserver(fitTitle).observe(document.documentElement);
   function show(talks) {
     const topic = talks.find(t => t.desk === desk)?.title;
-    title.textContent = typeof topic === 'string' ? topic : '';
+    const text = typeof topic === 'string' ? topic : '';
+    if (text === title.textContent) return;
+    title.textContent = text;
     title.title = title.textContent;
+    fitTitle();
   }
   if (channel) {
     channel.onmessage = ({data}) => {

@@ -3,29 +3,36 @@
 <meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1">
 <title>הדגמת שילוט השולחנות · ספארקו</title>
 <style>
-*{box-sizing:border-box}body{margin:0;background:#f7f5ee;color:#283a2b;font:16px/1.45 system-ui,sans-serif}main{max-width:1160px;margin:0 auto;padding:clamp(12px,3vw,30px)}h1{font-size:clamp(18px,3vw,28px);margin:0}p{margin:4px 0 16px}form{display:flex;align-items:end;gap:8px;flex-wrap:wrap;margin:12px 0}label{display:grid;font-size:14px;gap:3px}label:nth-child(2){flex:1 1 200px}input,select,button{font:inherit;border-radius:7px;padding:7px 10px;border:1px solid #aab5a1;background:#fff}button{cursor:pointer;color:inherit}button[type=submit]{background:#34452f;color:#fff}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #8b732c}figure{position:relative;margin:0;aspect-ratio:16/9;overflow:hidden;border-radius:12px;background:#69503c}img{display:block;width:100%;height:100%}.map-scroll{overflow-x:auto}figure{min-width:620px}iframe{position:absolute;border:none;background:transparent;transform:translate(-50%,-50%);width:22%;height:15%;pointer-events:none}#status{min-height:1.4em;font-size:14px}
+*{box-sizing:border-box}body{margin:0;background:#f7f5ee;color:#283a2b;font:16px/1.45 system-ui,sans-serif}main{max-width:1160px;margin:0 auto;padding:clamp(12px,3vw,30px)}h1{font-size:clamp(18px,3vw,28px);margin:0}p{margin:4px 0 16px}form{display:flex;align-items:end;gap:8px;flex-wrap:wrap;margin:12px 0}label{display:grid;font-size:14px;gap:3px}label:nth-child(2){flex:1 1 200px}input,select,button{font:inherit;border-radius:7px;padding:7px 10px;border:1px solid #aab5a1;background:#fff}button{cursor:pointer;color:inherit}button[type=submit]{background:#34452f;color:#fff}button:focus-visible,input:focus-visible,select:focus-visible{outline:3px solid #8b732c}figure{position:relative;margin:0;aspect-ratio:16/9;overflow:hidden;border-radius:12px;background:#69503c}img{display:block;width:100%;height:100%}.map-scroll{overflow-x:auto}figure{min-width:620px}iframe{position:absolute;border:none;background:transparent;transform:translate(-50%,-50%) scale(var(--map-scale));pointer-events:none}#status{min-height:1.4em;font-size:14px}
 </style>
 <main><h1>הדגמת שילוט השולחנות</h1><p>בחרו שולחן וכתבו נושא כדי לראות אותו על מפת המרחב. השינויים כאן הם להדגמה בלבד.</p>
 <form><label>שולחן<select id="desk"></select></label><label>נושא השיחה<input id="topic" maxlength="140" required></label><button type="submit">הצגת הנושא</button><button type="button" id="close">סיום השיחה</button></form>
 <div class="map-scroll"><figure aria-label="חצר המרחב הפתוח עם שלטי הנושאים"><img alt="חמשת השולחנות בחצר המרחב הפתוח" src="https://s3.sparkco.space/imagebucket/room_backgrounds/BRZ7hO48ELbW0Eim6J1j"></figure></div><p id="status" role="status"></p></main>
 <script type="module">
+import {desks} from "./timing.js";
 const liveRoom = new URLSearchParams(location.search).get('room');
 const live = /^[A-Za-z0-9]{20}$/.test(liveRoom || '');
 const room = live ? liveRoom : 'OpenSpaceDemoView001';
 const channel = !live && typeof BroadcastChannel === 'function' ? new BroadcastChannel('olive-house/table-topics/v1') : null;
-const tables = [["זית", 865, 235], ["הבוסתן", 1930, 384], ["גפן", 2365, 272], ["חצר", 1360, 924], ["כרם", 1656, 830]];
+const layout = await (await fetch('./table-signs.json')).json();
+const figure = document.querySelector('figure');
+new ResizeObserver(([entry]) => {
+  figure.style.setProperty('--map-scale',entry.contentRect.width/layout.canvas[0]);
+}).observe(figure);
 const topics = new Map([['זית','מה יגרום לאנשים לחזור למפגש הבא?'],['גפן','איזו יוזמה נרצה להוביל יחד?']]);
 const desk = document.getElementById('desk'), topic = document.getElementById('topic'), status = document.getElementById('status');
 function publish() { channel?.postMessage({type:'titles',room,titles:[...topics].map(([desk,title])=>({desk,title}))}); }
 if (channel) channel.onmessage = ({data}) => { if(data?.type==='read'&&data.room===room) publish(); };
-for (const [name,x,y] of tables) {
+for (const name of desks) {
+  const {center_x:x,center_y:y,width,height}=layout.signs.find(sign=>sign.table===name);
   desk.add(new Option(name,name));
   const frame = document.createElement('iframe');
   frame.title='נושא השיחה · '+name;
   frame.tabIndex=-1;
   frame.src='sign.html?'+new URLSearchParams({room,desk:name});
-  frame.style.left=(x/3200*100)+'%';frame.style.top=(y/1800*100)+'%';
-  document.querySelector('figure').append(frame);
+  frame.style.width=width+'px';frame.style.height=height+'px';
+  frame.style.left=(x/layout.canvas[0]*100)+'%';frame.style.top=(y/layout.canvas[1]*100)+'%';
+  figure.append(frame);
 }
 desk.onchange=()=>{topic.value=topics.get(desk.value)||'';};desk.onchange();
 document.querySelector('form').onsubmit=e=>{ e.preventDefault();const value=topic.value.trim();if(!value)return;topics.set(desk.value,value);publish();status.textContent='הנושא מוצג מעל שולחן '+desk.value; };

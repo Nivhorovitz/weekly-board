@@ -55,7 +55,7 @@ if (!preview && bridge && window.parent !== window) {
     setLauncher(message.widget?.visibility === 'plugin_controlled');
   });
   bridge.onViewport?.(message => { room = message.room_id || room; });
-  bridge.ready('2.2.0');
+  bridge.ready('2.2.1');
 }
 const storageKey = 'open-house/device';
 let device, storageAvailable = true;
@@ -236,6 +236,8 @@ function agenda(list){
     action.title=t.host+' · '+t.title;
     return action;
   };
+  const tableCount=new Set(upcoming.map(t=>t.room+'/'+t.desk)).size;
+  list.toggleAttribute('data-dense',tableCount>=9);
   if(timeline(list,upcoming,board.rooms,scheduleParams,makeTopic))return;
   if(!upcoming.length){list.append(node('p','הלוח פתוח להצעות שיחה.'));return;}
   const table=node('table'),head=table.createTHead().insertRow();
