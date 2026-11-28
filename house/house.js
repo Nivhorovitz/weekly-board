@@ -1,5 +1,5 @@
 import {watchSeat} from './seating.js';
-import {timeline,rememberAgenda} from './agenda.js';
+import {timeline,rememberAgenda} from './agenda.js?v=2.2.2';
 import {desks as deskNames,inSession,overlaps,rounds,numberOption,timeRange} from './timing.js';
 const $ = id => document.getElementById(id);
 const params = new URLSearchParams(location.search);
@@ -55,7 +55,7 @@ if (!preview && bridge && window.parent !== window) {
     setLauncher(message.widget?.visibility === 'plugin_controlled');
   });
   bridge.onViewport?.(message => { room = message.room_id || room; });
-  bridge.ready('2.2.1');
+  bridge.ready('2.2.2');
 }
 const storageKey = 'open-house/device';
 let device, storageAvailable = true;
@@ -94,6 +94,10 @@ async function rpc(name, values) {
 function activeRoom(r) {
   return r.room===initialRoom || r.room===room || Date.now()-Date.parse(r.seen_at)<180000;
 }
+function roomCaption(r) {
+  if (!preview && room!==initialRoom && r?.room===room) return 'החדר הזה';
+  return r?.label || 'מרחב פתוח';
+}
 function reachable(talk) {
   return board.rooms.some(r => r.room === talk.room && activeRoom(r));
 }
@@ -130,7 +134,7 @@ async function refresh() {
     if(tableView && !deskNames.includes(desk)) throw Error('unknown table');
     const data=await rpc('os_house_view',{room_id:room,desk_name:tableView?desk:''});
     if(epoch!==visitEpoch || !toolsVisible)return;
-    const json=JSON.stringify(data)+data.talks.map(t=>inSession(t)?'1':'0').join('')+data.rooms.map(r=>activeRoom(r)?'1':'0').join(''); board=data;
+    const json=room+JSON.stringify(data)+data.talks.map(t=>inSession(t)?'1':'0').join('')+data.rooms.map(r=>activeRoom(r)?'1':'0').join(''); board=data;
     publishTitles();
     if(json!==lastData && !document.querySelector('.agenda-scroll.dragging')){lastData=json;render();}
     $('new').disabled=!storageAvailable;
@@ -167,7 +171,7 @@ function freeDesks(slot,source=board) {
   const active=source.rooms.filter(r=>r.room!==initialRoom && activeRoom(r)).sort((a,b)=>a.label.localeCompare(b.label,'he',{numeric:true}));
   const rooms=(active.length?active:source.rooms.filter(r=>r.room===initialRoom)).slice(0,numberOption(scheduleParams,'rooms',999,999));
   return rooms.flatMap(r=>r.desks.filter(d=>!source.talks.some(t=>t.room===r.room && t.desk===d && overlaps(t,slot)))
-    .map(d=>({room:r.room,desk:d,label:r.label+' · '+d})));
+    .map(d=>({room:r.room,desk:d,label:roomCaption(r)+' · '+d})));
 }
 async function newTalk(parent=null) {
   const allocation=tableView?await rpc('os_house_view',{room_id:room,desk_name:''}):board;
@@ -224,7 +228,7 @@ function visit(t){
     routeTimer=setTimeout(()=>{if(room!==t.room)notice('המעבר לחדר לא הושלם. אפשר לנסות שוב.');},4500);
     return;
   }
-  notice('השיחה מתקיימת בשולחן '+t.desk+' · '+dest.label+'. אפשר להתיישב בגרירת האווטר.');
+  notice('השיחה מתקיימת בשולחן '+t.desk+' · '+roomCaption(dest)+'. אפשר להתיישב בגרירת האווטר.');
 }
 function agenda(list){
   const upcoming=board.talks.filter(t=>!t.closed && (!t.ends_at || Date.parse(t.ends_at)>Date.now())
@@ -238,7 +242,7 @@ function agenda(list){
   };
   const tableCount=new Set(upcoming.map(t=>t.room+'/'+t.desk)).size;
   list.toggleAttribute('data-dense',tableCount>=9);
-  if(timeline(list,upcoming,board.rooms,scheduleParams,makeTopic))return;
+  if(timeline(list,upcoming,board.rooms,scheduleParams,makeTopic,roomCaption))return;
   if(!upcoming.length){list.append(node('p','הלוח פתוח להצעות שיחה.'));return;}
   const table=node('table'),head=table.createTHead().insertRow();
   for(const title of ['שעה','נושא','חדר','שולחן'])head.append(node('th',title));
@@ -247,7 +251,7 @@ function agenda(list){
     const row=body.insertRow(),loc=board.rooms.find(r=>r.room===t.room);
     const time=row.insertCell();time.dir='auto';time.textContent=t.starts_at?timeRange(t.starts_at,t.ends_at):'פתוח';
     const topic=makeTopic(t);
-    row.insertCell().append(topic);row.insertCell().textContent=(loc?.label||'מרחב פתוח').replace(/^מרחב פתוח #/,'#');
+    row.insertCell().append(topic);row.insertCell().textContent=roomCaption(loc).replace(/^מרחב פתוח #/,'#');
     row.insertCell().textContent=t.desk;
   }
   list.append(table);

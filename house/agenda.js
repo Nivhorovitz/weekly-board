@@ -109,13 +109,14 @@ function wireScrolling(pane,earlier,later,slots) {
 }
 
 // Return false to keep the small public list when there is only one time block.
-export function timeline(list,talks,rooms,params,topicButton) {
+export function timeline(list,talks,rooms,params,topicButton,roomCaption) {
   const slots=columnsFor(talks,params);
   if(slots.length<2) return false;
   const planned=Number.isFinite(Date.parse(params.get('start')||''));
   if(!planned && slots.length<3 && talks.length<6)return false;
   const grouped=new Map();
-  const roomLabel=id=>rooms.find(r=>r.room===id)?.label || '';
+  const roomById=new Map(rooms.map(r=>[r.room,r]));
+  const roomLabel=id=>roomById.get(id)?.label || '';
   for(const t of talks){
     const id=t.room+'/'+t.desk;
     if(!grouped.has(id))grouped.set(id,{room:t.room,desk:t.desk,bySlot:new Map()});
@@ -146,9 +147,9 @@ export function timeline(list,talks,rooms,params,topicButton) {
   const body=table.createTBody();
   const rows=[...grouped.values()].sort((a,b)=>roomOrder.compare(roomLabel(a.room),roomLabel(b.room)) || deskOrder.indexOf(a.desk)-deskOrder.indexOf(b.desk));
   for(const item of rows){
-    const row=body.insertRow(),label=roomLabel(item.room);
+    const row=body.insertRow(),room=roomById.get(item.room);
     const h=th(row,item.desk,'row');
-    if(label){const tag=document.createElement('small');tag.textContent=label.replace('מרחב פתוח #','#');h.append(' ',tag);}
+    if(room){const tag=document.createElement('small');tag.textContent=roomCaption(room).replace('מרחב פתוח #','#');h.append(' ',tag);}
     for(const slot of slots){
       const cell=row.insertCell();
       for(const talk of item.bySlot.get(slotKey(slot.start,slot.end))||[])cell.append(topicButton(talk));
