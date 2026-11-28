@@ -5,6 +5,7 @@ let room = params.get('room') || initialRoom;
 const bridge = window.SparkcoBridge;
 if (bridge && window.parent !== window) {
   bridge.onInit(message => { room = message.room_id || room; });
+  bridge.onViewport?.(message => { room = message.room_id || room; });
   bridge.ready('1.0.0');
 }
 const storageKey = 'open-house/device';
@@ -38,10 +39,19 @@ async function rpc(name, values) {
   }
   return response.json();
 }
+function activeRoom(r) {
+  return r.room===initialRoom || r.room===room || Date.now()-Date.parse(r.seen_at)<180000;
+}
+let lastSeen=0;
 async function refresh() {
   if(refreshing)return;
   refreshing=true;
   try {
+    if (room!==initialRoom && window.parent!==window && Date.now()-lastSeen>30000) {
+      const label=params.get('room_name') || '';
+      const presence=await fetch(endpoint+'os_house_presence',{method:'POST',headers,body:JSON.stringify({room_id:room,room_label:label}),signal:AbortSignal.timeout(8000)});
+      if(presence.ok && await presence.json())lastSeen=Date.now();
+    }
     const data=await rpc('os_house_board',{});
     const json=JSON.stringify(data); board=data;
     if(json!==lastData){lastData=json;render();}
@@ -74,7 +84,9 @@ async function write(op,item,extra={}) {
   if(!await rpc('os_house_write',{op,item,...extra}))throw Error('השינוי לא אושר.');
 }
 function freeDesks(){
-  return board.rooms.flatMap(r=>r.desks.filter(d=>!board.talks.some(t=>!t.closed&&t.room===r.room&&t.desk===d)).map(d=>({room:r.room,desk:d,label:r.label+' · '+d})));
+  const copies=board.rooms.filter(r=>r.room!==initialRoom && activeRoom(r));
+  const visible=copies.length ? copies : board.rooms.filter(r=>r.room===initialRoom);
+  return visible.sort((a,b)=>Number(b.room===room)-Number(a.room===room)).flatMap(r=>r.desks.filter(d=>!board.talks.some(t=>!t.closed&&t.room===r.room&&t.desk===d)).map(d=>({room:r.room,desk:d,label:r.label+' · '+d})));
 }
 function newTalk(parent=null) {
   const desks=freeDesks();
@@ -99,12 +111,18 @@ function contribute(t,kind,initial=''){
 }
 function visit(t){
   if(t.closed){$('status').textContent='השיחה הסתיימה. התוצרים נשארו כאן.';return;}
-  if(room!==t.room && bridge?.navigate(t.room))return;
+  const dest=board.rooms.find(r=>r.room===t.room);
+  if(!dest || !activeRoom(dest)){ $('status').textContent='העותק אינו פעיל כרגע. תוצרי השיחה זמינים כאן.';return; }
+  if(room!==t.room && bridge?.navigate(t.room)){
+    $('status').textContent='עוברים אל '+dest.label+' · '+t.desk;
+    setTimeout(()=>{if(room!==t.room)$('status').textContent='המעבר לחדר לא אושר. נשארתם בשיחה הנוכחית.';},4500);
+    return;
+  }
   $('status').textContent='השיחה מתקיימת בשולחן '+t.desk+' · '+(board.rooms.find(r=>r.room===t.room)?.label||'')+'. אפשר להתיישב בגרירת האווטר.';
 }
 function record(t) {
   const area=node('article');
-  area.append(button(t.title,()=>{selected=t.id;view='live';render();if(!t.closed)visit(t);},'topic'),node('small',t.host+' · '+t.desk+(t.closed?' · הסתיימה':'')));
+  area.append(button(t.title,()=>{selected=t.id;view='live';render();if(!t.closed)visit(t);},'topic'),node('small',t.host+' · '+t.desk+' · '+(board.rooms.find(r=>r.room===t.room)?.label||'')+(t.closed?' · הסתיימה':'')));
   if(t.parent){const p=board.talks.find(x=>x.id===t.parent);if(p)area.append(node('small','המשך לשיחה ״'+p.title+'״'));}
   return area;
 }
